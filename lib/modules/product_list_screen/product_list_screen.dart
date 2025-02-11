@@ -1,4 +1,6 @@
+import 'package:chop_chop/modules/product_list_screen/product_list_controller.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -9,6 +11,8 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
+  final ProductListController _controller = Get.put(ProductListController());
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,6 +40,11 @@ class _ProductListScreenState extends State<ProductListScreen> {
     return Column(
       children: [
         Text("Recommend Products"),
+        Obx(() {
+          _controller.isLoading;
+          _controller.productList.value;
+          return Text("Test");
+        },),
         Expanded(
           child: ListView.builder(
             shrinkWrap: true,

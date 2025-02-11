@@ -1,5 +1,5 @@
-import 'package:chop_chop/modules/cart_screen/cart_screen.dart';
-import 'package:chop_chop/modules/product_list_screen/product_list_screen.dart';
+import 'package:chop_chop/router/route_path.dart';
+import 'package:chop_chop/router/routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,12 +12,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GetMaterialApp(
+      initialRoute: RoutePath.productListPath,
+      getPages: Routes.routers,
       title: 'Flutter Demo',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const CartScreen(),
+      // home: const CartScreen(),
     );
   }
 }
