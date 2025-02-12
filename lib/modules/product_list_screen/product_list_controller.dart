@@ -7,6 +7,7 @@ class ProductListController extends GetxController {
   /// TODO: make a getter.
   // final isLoadingProducts = true.obs;
   final productCount = 0.obs;
+  var _cursor = "";
   // final productList = Rxn<ProductRespond>();
   // final recommendedProducts = RxList<Item>();
 
@@ -16,22 +17,19 @@ class ProductListController extends GetxController {
   @override
   Future<void> onInit() async {
     super.onInit();
-    fetchLatestProduct();
+    // fetchLatestProduct();
     // await fetchRecommendedProduct();
   }
 
-  Future<ProductRespond?> fetchLatestProduct() async {
-    // try {
-    //   isLoadingProducts(true);
-    //   final x = await ProductService().getLatestProduct();
-    //   productList.value = x;
-    //   print(x);
-    //   return x;
-    // } catch (e, s) {
-    //   print(e);
-    //   return null;
-    //   // Get.snackbar("Error", "Failed to fetch users");
-    // }
+  Future<List<Item>> fetchLatestProduct() async {
+    try {
+      final resp = await ProductService().getLatestProduct();
+      _cursor = resp.nextCursor;
+      return resp.items;
+    } catch (e, s) {
+      print(e);
+      return Future.error(e);
+    }
   }
 
   Future<List<Item>> fetchRecommendedProduct() async {

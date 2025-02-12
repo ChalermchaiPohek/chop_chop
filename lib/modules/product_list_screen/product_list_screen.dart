@@ -1,6 +1,10 @@
+import 'package:chop_chop/model/product_respond.dart';
 import 'package:chop_chop/modules/product_list_screen/product_list_controller.dart';
+import 'package:chop_chop/router/route_path.dart';
+import 'package:chop_chop/util/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ProductListScreen extends StatefulWidget {
@@ -12,6 +16,7 @@ class ProductListScreen extends StatefulWidget {
 
 class _ProductListScreenState extends State<ProductListScreen> {
   final ProductListController _controller = Get.put(ProductListController());
+  final NumberFormat _formater = NumberFormat("#,###.##");
 
   @override
   Widget build(BuildContext context) {
@@ -38,56 +43,118 @@ class _ProductListScreenState extends State<ProductListScreen> {
           )
         ],
       ),
-      body: _buildContent(context),
+      body: SafeArea(child: _buildContent(context)),
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    return Column(
-      children: [
-        Text("Recommend Products"),
-        Obx(() {
-          _controller.isLoading;
-          _controller.productList.value;
-          return Text("Test");
-        },),
-        Expanded(
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: 5,
-            itemBuilder: (context, index) {
-              return ListTile(
-                leading: const SizedBox(),
-                title: Skeletonizer(child: Text('Item ${index + 1}')),
-                subtitle: Skeletonizer(child: Text('Subtitle for item ${index + 1}')),
-                trailing: FilledButton(
-                    onPressed: () {
-                      /// TODO: add logic to change to + & -
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          UIConst.hDivider,
+          Text("Recommend Products", style: Theme.of(context).textTheme.titleLarge,),
+          UIConst.hDivider,
+          FutureBuilder<List<Item>>(
+            future: _controller.fetchRecommendedProduct(),
+            builder: (_, snapshot) {
+              final bool isLoading = snapshot.connectionState == ConnectionState.waiting;
+              final List<Item> data = snapshot.data ?? [];
+
+              return SizedBox(
+                height: MediaQuery.of(context).size.height * 0.35,
+                child: Skeletonizer(
+                  enabled: isLoading,
+                  child: ListView.builder(
+                    itemCount: isLoading ? 5 : data.length,
+                    itemBuilder: (context, index) {
+                      /// MARK: - Possibly has a better solution.
+                      if (isLoading) {
+                        return ListTile(
+                          // key: ValueKey(item.id),
+                          leading: SizedBox.square(
+                            dimension: 30,
+                            child: Container(
+                              /// TODO: add a photo
+                            ),
+                          ),
+                          title: Text("item.name"),
+                          subtitle: Text("item.price"),
+                        );
+                      } else {
+                        final item = data.elementAt(index);
+                        return ListTile(
+                          leading: const SizedBox(),
+                          title: Text(item.name),
+                          subtitle: Text(_formater.format(item.price)),
+                          trailing: FilledButton(
+                            onPressed: () {
+                              /// TODO: add logic to change to + & -
+                            },
+                            child: Text("Add to cart"),
+                          ),
+                          onTap: null,
+                        );
+                      }
                     },
-                    child: Text("Add to cart"),
+                  ),
                 ),
-                onTap: null,
               );
             },
           ),
-        ),
-        Text("Latest Products"),
-        Expanded(
-          child: ListView.builder(
-            itemCount: 20,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              return ListTile(
-                leading: CircleAvatar(child: Text('${index + 1}')),
-                title: Text('Item ${index + 1}'),
-                subtitle: Text('Subtitle for item ${index + 1}'),
-                trailing: Icon(Icons.arrow_forward_ios),
-                onTap: () {},
+          UIConst.hDivider,
+          Text("Latest Products", style: Theme.of(context).textTheme.titleMedium,),
+          UIConst.hDivider,
+          FutureBuilder<List<Item>>(
+            future: _controller.fetchLatestProduct(),
+            builder: (_, snapshot) {
+              final bool isLoading = snapshot.connectionState == ConnectionState.waiting;
+              final List<Item> data = snapshot.data ?? [];
+
+              return Expanded(
+                child: Skeletonizer(
+                  enabled: isLoading,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: isLoading ? 5 : data.length,
+                    itemBuilder: (context, index) {
+                      /// MARK: - Possibly has a better solution.
+                      if (isLoading) {
+                        return ListTile(
+                          // key: ValueKey(item.id),
+                          leading: SizedBox.square(
+                            dimension: 30,
+                            child: Container(
+                              /// TODO: add a photo
+                            ),
+                          ),
+                          title: Text("item.name"),
+                          subtitle: Text("item.price"),
+                        );
+                      } else {
+                        final item = data.elementAt(index);
+                        return ListTile(
+                          leading: const SizedBox(),
+                          title: Text(item.name),
+                          subtitle: Text(_formater.format(item.price)),
+                          trailing: FilledButton(
+                            onPressed: () {
+                              /// TODO: add logic to change to + & -
+                            },
+                            child: Text("Add to cart"),
+                          ),
+                          onTap: null,
+                        );
+                      }
+                    },
+                  ),
+                ),
               );
             },
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
