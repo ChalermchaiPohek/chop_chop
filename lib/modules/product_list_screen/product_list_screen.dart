@@ -20,7 +20,13 @@ class _ProductListScreenState extends State<ProductListScreen> {
         actions: [
           GestureDetector(
             onTap: () {
-              /// TODO: implement go to cart screen.
+              /// TODO: Use a proper data!
+              Get.toNamed(
+                  RoutePath.cartPath,
+                  arguments: {
+                    "":"",
+                  }
+              );
             },
             child: Row(
               children: [
