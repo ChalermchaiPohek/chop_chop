@@ -18,12 +18,12 @@ class ProductListController extends GetxController {
       ? 0
       : selectedProduct.values.reduce((value, element) => value + element,);
 
-  @override
-  Future<void> onInit() async {
-    super.onInit();
-    // fetchLatestProduct();
-    // await fetchRecommendedProduct();
-  }
+  // @override
+  // Future<void> onInit() async {
+  //   super.onInit();
+  //   // fetchLatestProduct();
+  //   // await fetchRecommendedProduct();
+  // }
 
   Future fetchLatestProduct() async {
     try {

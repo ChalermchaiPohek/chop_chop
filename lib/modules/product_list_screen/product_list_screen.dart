@@ -93,9 +93,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
                       ),
                       Text("Something went wrong"),
                       FilledButton(
-                        onPressed: () {
+                        onPressed: () async {
                           if (!_controller.isLoadingRecProduct) {
-                            _controller.fetchRecommendedProduct();
+                            await _controller.fetchRecommendedProduct();
                           }
                         },
                         child: Text("Refresh"),
