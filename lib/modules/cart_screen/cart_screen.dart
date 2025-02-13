@@ -101,24 +101,39 @@ class _CartScreenState extends State<CartScreen> {
             Expanded(
               flex: 2,
               child: Container(
-                color: Theme.of(context).primaryColorDark,
+                padding: const EdgeInsets.all(16.0),
+                color: Theme.of(context).focusColor,
                 child: Column(
                   children: [
                     Row(
                       children: [
                         Expanded(child: Text("Subtotal")),
-                        Text("1,234.55"),
+                        Obx(() {
+                          final subTotal = _controller.totalPrice;
+                          return Text(_formater.format(subTotal));
+                        },),
                       ],
                     ),
                     Row(
                       children: [
                         Expanded(child: Text("Promotion discount")),
-                        Text("-999.99", style: TextStyle(color: Colors.red),),
+                        Obx(() {
+                          final discount = _controller.discountPrice;
+                          return Text("-${_formater.format(discount)}", style: TextStyle(color: Colors.red),);
+                        },),
                       ],
                     ),
                     Row(
+
                       children: [
-                        Expanded(child: Text("1,212.3")),
+                        Expanded(
+                            child: Obx(() {
+                              final subTotal = _controller.totalPrice;
+                              final discount = _controller.discountPrice;
+                              return Text(_formater.format(subTotal - discount), style: Theme.of(context).textTheme.titleLarge,);
+                            },),
+                        ),
+                        const Spacer(),
                         FilledButton(
                           onPressed: () {
                             /// TODO: fire an api then show success or faile checkout.
