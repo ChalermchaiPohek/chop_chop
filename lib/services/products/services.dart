@@ -8,9 +8,18 @@ import 'package:http/http.dart' as http;
 class ProductService extends GetxService {
 
 
-  Future<ProductRespond> getLatestProduct() async {
+  Future<ProductRespond> getLatestProduct({int limit = 20, String? cursor}) async {
     try {
-      final response = await http.get(Uri.parse("${AppConst.baseUrl}/products"));
+      String apiPath = "products?limit=$limit";
+      if (cursor != null && cursor.trim().isNotEmpty) {
+        apiPath += "&cursor=$cursor";
+      }
+
+      final response = await http.get(
+        Uri.parse(
+          "${AppConst.baseUrl}/$apiPath",
+        ),
+      );
       if (response.statusCode == 200) {
         return ProductRespond.fromJson(json.decode(response.body));
       } else {
@@ -22,7 +31,6 @@ class ProductService extends GetxService {
     }
   }
 
-  /// TODO: Not test yet.
   Future<List<Item>> getRecommendedProduct() async {
     try {
       final response = await http.get(Uri.parse("${AppConst.baseUrl}/recommended-products"));

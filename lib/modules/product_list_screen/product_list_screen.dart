@@ -3,6 +3,7 @@ import 'package:chop_chop/model/product_respond.dart';
 import 'package:chop_chop/modules/product_list_screen/product_list_controller.dart';
 import 'package:chop_chop/router/route_path.dart';
 import 'package:chop_chop/util/constants.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -16,31 +17,49 @@ class ProductListScreen extends StatefulWidget {
 }
 
 class _ProductListScreenState extends State<ProductListScreen> {
-  final ProductListController _controller = Get.put(ProductListController());
+  final ProductListController _controller = Get.find<ProductListController>();
   final NumberFormat _formater = NumberFormat("#,###.##");
+  final ScrollController _scrollController = ScrollController();
+
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent) {
+      if (!_controller.isLoadingProduct) {
+        _controller.fetchLatestProduct();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         actions: [
-          GestureDetector(
-            onTap: () {
-              /// TODO: Use a proper data!
-              Get.toNamed(
-                  RoutePath.cartPath,
-                  arguments: {
-                    "":"",
-                  }
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Obx(() {
+              return IconButton(
+                padding: const EdgeInsets.all(0),
+                onPressed: () {
+                  Get.toNamed(
+                      RoutePath.cartPath,
+                      arguments: {
+                        "products": _controller.selectedProduct,
+                      }
+                  );
+                },
+                icon: Badge.count(
+                  count: _controller.totalProduct,
+                  child: Icon(Icons.shopping_cart_rounded),
+                ),
               );
-            },
-            child: Row(
-              children: [
-                Icon(Icons.shopping_cart_rounded),
-                const VerticalDivider(color: Colors.transparent,),
-                Text("amount of selected product") /// TODO: add the real data.
-              ],
-            ),
+            },),
           )
         ],
       ),
@@ -57,17 +76,40 @@ class _ProductListScreenState extends State<ProductListScreen> {
           UIConst.hDivider,
           Text("Recommend Products", style: Theme.of(context).textTheme.titleLarge,),
           UIConst.hDivider,
-          FutureBuilder<List<Item>>(
+          FutureBuilder(
             future: _controller.fetchRecommendedProduct(),
             builder: (_, snapshot) {
-              /// TODO: handling error
               final bool isLoading = snapshot.connectionState == ConnectionState.waiting;
-              final List<Item> data = snapshot.data ?? [];
 
+              /// MARK: - not perform a proper test.
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        CupertinoIcons.xmark_circle,
+                        color: CupertinoColors.destructiveRed,
+                        size: 50,
+                      ),
+                      Text("Something went wrong"),
+                      FilledButton(
+                        onPressed: () {
+                          if (!_controller.isLoadingRecProduct) {
+                            _controller.fetchRecommendedProduct();
+                          }
+                        },
+                        child: Text("Refresh"),
+                      )
+                    ],
+                  ),
+                );
+              }
+
+              final List<Item> data = _controller.recommendedProducts;
               return SizedBox(
                 height: MediaQuery.of(context).size.height * 0.35,
                 child: Skeletonizer(
-                  enabled: isLoading,
+                  enabled: isLoading || data.isEmpty,
                   child: ListView.builder(
                     itemCount: isLoading ? 5 : data.length,
                     itemBuilder: (context, index) {
@@ -123,19 +165,43 @@ class _ProductListScreenState extends State<ProductListScreen> {
           UIConst.hDivider,
           Text("Latest Products", style: Theme.of(context).textTheme.titleMedium,),
           UIConst.hDivider,
-          FutureBuilder<List<Item>>(
+          FutureBuilder(
             future: _controller.fetchLatestProduct(),
             builder: (_, snapshot) {
-              /// TODO: handling error
               final bool isLoading = snapshot.connectionState == ConnectionState.waiting;
-              final List<Item> data = snapshot.data ?? [];
 
+              /// MARK: - not perform a proper test.
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        CupertinoIcons.xmark_circle,
+                        color: CupertinoColors.destructiveRed,
+                        size: 50,
+                      ),
+                      Text("Something went wrong"),
+                      FilledButton(
+                        onPressed: () {
+                          if (!_controller.isLoadingRecProduct) {
+                            _controller.fetchLatestProduct();
+                          }
+                        },
+                        child: Text("Refresh"),
+                      )
+                    ],
+                  ),
+                );
+              }
+
+              final List<Item> products = _controller.products;
               return Expanded(
                 child: Skeletonizer(
                   enabled: isLoading,
                   child: ListView.builder(
+                    controller: _scrollController,
                     shrinkWrap: true,
-                    itemCount: isLoading ? 5 : data.length,
+                    itemCount: isLoading ? 5 : products.length,
                     itemBuilder: (context, index) {
                       /// MARK: - Possibly has a better solution.
                       if (isLoading) {
@@ -151,7 +217,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           subtitle: Text("item.price"),
                         );
                       } else {
-                        final item = data.elementAt(index);
+                        final item = products.elementAt(index);
                         return ListTile(
                           leading: const SizedBox(),
                           title: Text(item.name),
