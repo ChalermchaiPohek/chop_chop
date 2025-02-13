@@ -1,3 +1,4 @@
+import 'package:cart_stepper/cart_stepper.dart';
 import 'package:chop_chop/model/product_respond.dart';
 import 'package:chop_chop/modules/product_list_screen/product_list_controller.dart';
 import 'package:chop_chop/router/route_path.dart';
@@ -59,6 +60,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
           FutureBuilder<List<Item>>(
             future: _controller.fetchRecommendedProduct(),
             builder: (_, snapshot) {
+              /// TODO: handling error
               final bool isLoading = snapshot.connectionState == ConnectionState.waiting;
               final List<Item> data = snapshot.data ?? [];
 
@@ -88,12 +90,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           leading: const SizedBox(),
                           title: Text(item.name),
                           subtitle: Text(_formater.format(item.price)),
-                          trailing: FilledButton(
-                            onPressed: () {
-                              /// TODO: add logic to change to + & -
-                            },
-                            child: Text("Add to cart"),
-                          ),
+                          trailing: Obx(() {
+
+                            final bool isAlreadyIn = _controller.selectedProduct.containsKey(item);
+                            if (isAlreadyIn) {
+                              return CartStepper(
+                                alwaysExpanded: true,
+                                stepper: 1,
+                                value: _controller.selectedProduct[item],
+                                didChangeCount: (value) {
+                                  _controller.updateItemInCart(value, item);
+                                },
+                              );
+                            } else {
+                              return FilledButton(
+                                onPressed: () {
+                                  _controller.updateItemInCart(1, item);
+                                },
+                                child: Text("Add to cart"),
+                              );
+                            }
+                          },),
                           onTap: null,
                         );
                       }
@@ -109,6 +126,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
           FutureBuilder<List<Item>>(
             future: _controller.fetchLatestProduct(),
             builder: (_, snapshot) {
+              /// TODO: handling error
               final bool isLoading = snapshot.connectionState == ConnectionState.waiting;
               final List<Item> data = snapshot.data ?? [];
 
@@ -138,12 +156,27 @@ class _ProductListScreenState extends State<ProductListScreen> {
                           leading: const SizedBox(),
                           title: Text(item.name),
                           subtitle: Text(_formater.format(item.price)),
-                          trailing: FilledButton(
-                            onPressed: () {
-                              /// TODO: add logic to change to + & -
-                            },
-                            child: Text("Add to cart"),
-                          ),
+                          trailing: Obx(() {
+
+                            final bool isAlreadyIn = _controller.selectedProduct.containsKey(item);
+                            if (isAlreadyIn) {
+                              return CartStepper(
+                                alwaysExpanded: true,
+                                stepper: 1,
+                                value: _controller.selectedProduct[item],
+                                didChangeCount: (value) {
+                                  _controller.updateItemInCart(value, item);
+                                },
+                              );
+                            } else {
+                              return FilledButton(
+                                onPressed: () {
+                                  _controller.updateItemInCart(1, item);
+                                },
+                                child: Text("Add to cart"),
+                              );
+                            }
+                          },),
                           onTap: null,
                         );
                       }

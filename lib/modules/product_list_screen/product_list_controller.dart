@@ -5,14 +5,12 @@ import 'package:get/get.dart';
 class ProductListController extends GetxController {
 
   /// TODO: make a getter.
-  // final isLoadingProducts = true.obs;
-  final productCount = 0.obs;
-  var _cursor = "";
-  // final productList = Rxn<ProductRespond>();
-  // final recommendedProducts = RxList<Item>();
+  int get productCount => _productCount.value;
+  final _productCount = 0.obs;
 
-  // bool get loadingRecommended => _isLoadingRecommended.value;
-  // final _isLoadingRecommended = true.obs;
+  var _cursor = "";
+
+  late final RxMap<Item, int> selectedProduct = <Item, int>{}.obs;
 
   @override
   Future<void> onInit() async {
@@ -42,6 +40,14 @@ class ProductListController extends GetxController {
     } catch (error, s) {
       printError(info: error.toString());
       return Future.error(error);
+    }
+  }
+
+  void updateItemInCart(int amount, Item item) {
+    if (amount == 0) {
+      selectedProduct.remove(item);
+    } else {
+      selectedProduct[item] = amount;
     }
   }
 }
