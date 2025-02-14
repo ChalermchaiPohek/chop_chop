@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:chop_chop/model/product_respond.dart';
 import 'package:chop_chop/util/constants.dart';
@@ -15,9 +16,11 @@ class ProductService extends GetxService {
         apiPath += "&cursor=$cursor";
       }
 
+      final bool isAndroid = Platform.isAndroid;
+
       final response = await http.get(
         Uri.parse(
-          "${AppConst.baseUrl}/$apiPath",
+          "${isAndroid ? AppConst.baseUrlAndroidEmu : AppConst.baseUrl}/$apiPath",
         ),
       );
       if (response.statusCode == 200) {
@@ -33,7 +36,8 @@ class ProductService extends GetxService {
 
   Future<List<Item>> getRecommendedProduct() async {
     try {
-      final response = await http.get(Uri.parse("${AppConst.baseUrl}/recommended-products"));
+      final bool isAndroid = Platform.isAndroid;
+      final response = await http.get(Uri.parse("${isAndroid ? AppConst.baseUrlAndroidEmu : AppConst.baseUrl}/recommended-products"));
       if (response.statusCode == 200) {
         final List jsonResp = json.decode(response.body);
         return jsonResp.map((e) => Item.fromJson(e),).toList();

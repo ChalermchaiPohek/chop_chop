@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:chop_chop/util/constants.dart';
 import 'package:get/get.dart';
@@ -12,8 +13,10 @@ class OrderService extends GetxService {
       if (productIds.isEmpty) {
         return 0;
       }
+
+      final bool isAndroid = Platform.isAndroid;
       final response = await http.post(
-        Uri.parse("${AppConst.baseUrl}/orders/checkout"),
+        Uri.parse("${isAndroid ? AppConst.baseUrlAndroidEmu : AppConst.baseUrl}/orders/checkout"),
         headers: {
           "Content-Type":"application/json",
         },
