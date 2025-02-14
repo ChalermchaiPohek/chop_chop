@@ -35,22 +35,39 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Widget _buildContent(BuildContext context) {
+    final List<Widget> successOrder = [
+      Text(
+        "Your order has been processed.",
+        style: Theme.of(context).textTheme.titleLarge,
+      ),
+      UIConst.hDivider,
+      Text("Thank you for shopping with us!"),
+      UIConst.hDivider,
+      FilledButton(
+        onPressed: () {
+          Get.back();
+        },
+        child: Text("Shop again"),
+      )
+    ];
+    final List<Widget> emptyCart = [
+      Text("Empty Cart"),
+      UIConst.hDivider,
+      FilledButton(
+        onPressed: () {
+          Get.back();
+        },
+        child: Text("Go to shopping"),
+      )
+    ];
+
     return Obx(() {
       final products = _controller.selectedProduct;
       if (products.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("Empty Cart"),
-              UIConst.hDivider,
-              FilledButton(
-                onPressed: () {
-                  Get.back();
-                },
-                child: Text("Go to shopping"),
-              )
-            ],
+            children: _controller.placeOrderStatus ? successOrder : emptyCart,
           ),
         );
       } else {
@@ -136,7 +153,16 @@ class _CartScreenState extends State<CartScreen> {
                         const Spacer(),
                         FilledButton(
                           onPressed: () {
-                            /// TODO: fire an api then show success or faile checkout.
+                            _controller.placeOrder()
+                                .catchError((error, s) {
+                              Get.showSnackbar(
+                                GetSnackBar(
+                                  backgroundColor: Colors.red,
+                                  message: 'Something went wrong',
+                                  duration: const Duration(seconds: 3),
+                                ),
+                              );
+                            },);
                           },
                           child: Text("Checkout"),
                         )

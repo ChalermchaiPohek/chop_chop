@@ -3,6 +3,9 @@ import 'package:chop_chop/services/products/services.dart';
 import 'package:get/get.dart';
 
 class ProductListController extends GetxController {
+
+  final ProductService _productService = Get.find();
+
   List<Item> get products => _product;
   final RxList<Item> _product = RxList<Item>();
 
@@ -29,7 +32,7 @@ class ProductListController extends GetxController {
     try {
       isLoadingProduct = true;
       await Future.delayed(const Duration(seconds: 3));
-      final resp = await ProductService().getLatestProduct(cursor: _cursor);
+      final resp = await _productService.getLatestProduct(cursor: _cursor);
       isLoadingProduct = false;
       _cursor = resp.nextCursor;
       _product.addAll(resp.items);
@@ -43,7 +46,7 @@ class ProductListController extends GetxController {
   Future fetchRecommendedProduct() async {
     try {
       isLoadingRecProduct = true;
-      return ProductService().getRecommendedProduct()
+      return _productService.getRecommendedProduct()
           .then((value) async {
         await Future.delayed(const Duration(seconds: 3));
           _rProduct.addAll(value);

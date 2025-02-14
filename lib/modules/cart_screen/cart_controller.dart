@@ -1,7 +1,9 @@
 import 'package:chop_chop/model/product_respond.dart';
+import 'package:chop_chop/services/order/services.dart';
 import 'package:get/get.dart';
 
 class CartController extends GetxController {
+  final OrderService _orderService = Get.find();
 
   late RxMap<Item, int> selectedProduct = <Item, int>{}.obs;
   double get totalPrice => _totalPrice.value;
@@ -10,6 +12,8 @@ class CartController extends GetxController {
   double get discountPrice => _discountPrice.value;
   final RxDouble _discountPrice = 0.0.obs;
 
+  bool get placeOrderStatus => _placeOrderSucceed.value;
+  final _placeOrderSucceed = false.obs;
 
   @override
   void onReady() {
@@ -46,6 +50,25 @@ class CartController extends GetxController {
       double totalForProduct = totalAfterDiscount + totalForRemaining;
 
       _totalPrice.value += totalForProduct;
+    }
+  }
+
+  Future placeOrder() async {
+    try {
+      final List<int> productIds = selectedProduct.keys.map((e) => e.id,).toList();
+      return _orderService.checkout(productIds).then((value) {
+        if (value > 200 && value < 300) {
+          _placeOrderSucceed.value = true;
+          selectedProduct.clear();
+          return ;
+        } else {
+          _placeOrderSucceed.value = false;
+          throw Exception(value);
+        }
+      },);
+    } catch (error, s) {
+      _placeOrderSucceed.value = false;
+      return Future.error(error, s);
     }
   }
 }
