@@ -38,10 +38,10 @@ class CartController extends GetxController {
     for (var product in selectedProduct.entries) {
       final int unitPrice = product.key.price;
       final int quantity = product.value;
-      final int pairs = quantity ~/ 2;
+      final int pairs = quantity ~/ 2; /// MARK: - หารไม่เอาค่าทศนิยม e.g int result1 = 7 ~/ 2;  // 3 (instead of 3.5)
       final int remaining = quantity % 2;
 
-      final int totalForPairs = pairs * (unitPrice * 2);
+      final int totalForPairs = pairs * (unitPrice * 2); /// MARK: - calculate all pairs' price.
       final double discount = totalForPairs * discountRate;
       _discountPrice.value += discount;
 
