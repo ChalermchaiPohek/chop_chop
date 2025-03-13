@@ -1,4 +1,4 @@
-package com.example.chop_chop
+package com.example.shop
 
 import io.flutter.embedding.android.FlutterActivity
 

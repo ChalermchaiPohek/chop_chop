@@ -1,70 +1,23 @@
-import 'package:chop_chop/model/product_respond.dart';
-import 'package:chop_chop/services/products/services.dart';
+import 'package:chop_chop/util/food_enum.dart';
 import 'package:get/get.dart';
 
 class ProductListController extends GetxController {
-
-  final ProductService _productService = Get.find();
-
-  List<Item> get products => _product;
-  final RxList<Item> _product = RxList<Item>();
-
-  List<Item> get recommendedProducts => _rProduct;
-  final RxList<Item> _rProduct = RxList<Item>();
-
-  String? _cursor;
-  bool isLoadingProduct = false;
-  bool isLoadingRecProduct = false;
-
-  late final RxMap<Item, int> selectedProduct = <Item, int>{}.obs;
-  int get totalProduct => selectedProduct.values.isEmpty
+  late final RxList<Food> orderedFood = <Food>[].obs;
+  int get totalProduct => orderedFood.isEmpty
       ? 0
-      : selectedProduct.values.reduce((value, element) => value + element,);
+      : orderedFood.length;
 
-  // @override
-  // Future<void> onInit() async {
-  //   super.onInit();
-  //   // fetchLatestProduct();
-  //   // await fetchRecommendedProduct();
-  // }
+  void updateItemInCart(int amount, Food food) {
+    final List<Food> groupFood = orderedFood.where((p0) => p0.name == food.name,).toList();
 
-  Future fetchLatestProduct() async {
-    try {
-      isLoadingProduct = true;
-      await Future.delayed(const Duration(seconds: 3));
-      final resp = await _productService.getLatestProduct(cursor: _cursor);
-      isLoadingProduct = false;
-      _cursor = resp.nextCursor;
-      _product.addAll(resp.items);
-    } catch (e, s) {
-      print(e);
-      isLoadingProduct = false;
-      return Future.error(e);
-    }
-  }
-
-  Future fetchRecommendedProduct() async {
-    try {
-      isLoadingRecProduct = true;
-      return _productService.getRecommendedProduct()
-          .then((value) async {
-        await Future.delayed(const Duration(seconds: 3));
-          _rProduct.addAll(value);
-        isLoadingRecProduct = false;
-        return;
-      },);
-    } catch (error, s) {
-      isLoadingRecProduct = false;
-      printError(info: error.toString());
-      return Future.error(error);
-    }
-  }
-
-  void updateItemInCart(int amount, Item item) {
-    if (amount == 0) {
-      selectedProduct.remove(item);
+    if (amount > groupFood.length) {
+      orderedFood.add(food);
     } else {
-      selectedProduct[item] = amount;
+      orderedFood.remove(food);
     }
+  }
+
+  void clearCart() {
+    orderedFood.clear();
   }
 }

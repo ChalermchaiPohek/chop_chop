@@ -1,11 +1,11 @@
 import 'package:cart_stepper/cart_stepper.dart';
-import 'package:chop_chop/model/product_respond.dart';
 import 'package:chop_chop/modules/cart_screen/cart_controller.dart';
 import 'package:chop_chop/util/constants.dart';
+import 'package:chop_chop/util/food_enum.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({super.key});
@@ -16,12 +16,11 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   final CartController _controller = Get.find<CartController>();
-  final NumberFormat _formater = NumberFormat("#,###.##");
 
   @override
   void initState() {
     super.initState();
-    _controller.selectedProduct(Get.arguments["products"] as Map<Item, int>);
+    _controller.orderedFood(Get.arguments["products"] as List<Food>? ?? []);
   }
 
   @override
@@ -41,33 +40,33 @@ class _CartScreenState extends State<CartScreen> {
         style: Theme.of(context).textTheme.titleLarge,
       ),
       UIConst.hDivider,
-      Text("Thank you for shopping with us!"),
+      Text("Thank you!"),
       UIConst.hDivider,
       FilledButton(
         onPressed: () {
           Get.back();
         },
-        child: Text("Shop again"),
+        child: Text("Order again"),
       )
     ];
     final List<Widget> emptyCart = [
-      Text("Empty Cart"),
+      Text("Not order yet?"),
       UIConst.hDivider,
       FilledButton(
         onPressed: () {
           Get.back();
         },
-        child: Text("Go to shopping"),
+        child: Text("Go to order screen"),
       )
     ];
 
     return Obx(() {
-      final products = _controller.selectedProduct;
+      final products = _controller.orderedFood;
       if (products.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: _controller.placeOrderStatus ? successOrder : emptyCart,
+            children: _controller.placeOrderSucceed ? successOrder : emptyCart,
           ),
         );
       } else {
@@ -76,9 +75,10 @@ class _CartScreenState extends State<CartScreen> {
             Expanded(
               flex: 8,
               child: Obx(() {
-                final List<Widget> productItems = products.entries.map((e) {
+                final foodGroupOrder = products.groupListsBy((element) => element,);
+                final List<Widget> productItems = foodGroupOrder.entries.map((e) {
                   return Slidable(
-                    key: ValueKey(e.key.id),
+                    key: UniqueKey(),
                     endActionPane: ActionPane(
                       motion: const ScrollMotion(),
                       children: [
@@ -93,23 +93,22 @@ class _CartScreenState extends State<CartScreen> {
                       ],
                     ),
                     child: ListTile(
-                      leading: const SizedBox(),
+                      leading: CircleAvatar(backgroundColor: e.key.colour,),
                       title: Text(e.key.name),
-                      subtitle: Text("${_formater.format(e.key.price)} / unit"),
+                      subtitle: Text("${e.key.price.toStringAsFixed(2)} / unit"),
                       trailing: CartStepper(
                         alwaysExpanded: true,
                         stepper: 1,
-                        value: e.value,
+                        value: e.value.length,
                         didChangeCount: (value) {
                           _controller.updateItemInCart(value, e.key);
                         },
                       ),
-                      // onTap: () {},
+                      onTap: () {},
                     ),
                   );
                 },).toList();
                 return ListView(
-                  // itemCount: products.length,
                   shrinkWrap: true,
                   children: productItems,
                 );
@@ -124,48 +123,20 @@ class _CartScreenState extends State<CartScreen> {
                   children: [
                     Row(
                       children: [
-                        Expanded(child: Text("Subtotal")),
+                        Expanded(child: Text("Member card")),
                         Obx(() {
-                          final subTotal = _controller.totalPrice;
-                          return Text(_formater.format(subTotal));
-                        },),
+                          return Checkbox(value: _controller.isMembership, onChanged: (_) {
+                            _controller.toggleMembership();
+                          });
+                        }),
                       ],
                     ),
                     Row(
                       children: [
-                        Expanded(child: Text("Promotion discount")),
+                        Expanded(child: Text("Total")),
                         Obx(() {
-                          final discount = _controller.discountPrice;
-                          return Text("-${_formater.format(discount)}", style: TextStyle(color: Colors.red),);
+                          return Text(_controller.totalPrice.toStringAsFixed(2));
                         },),
-                      ],
-                    ),
-                    Row(
-
-                      children: [
-                        Expanded(
-                            child: Obx(() {
-                              final subTotal = _controller.totalPrice;
-                              final discount = _controller.discountPrice;
-                              return Text(_formater.format(subTotal - discount), style: Theme.of(context).textTheme.titleLarge,);
-                            },),
-                        ),
-                        const Spacer(),
-                        FilledButton(
-                          onPressed: () {
-                            _controller.placeOrder()
-                                .catchError((error, s) {
-                              Get.showSnackbar(
-                                GetSnackBar(
-                                  backgroundColor: Colors.red,
-                                  message: 'Something went wrong',
-                                  duration: const Duration(seconds: 3),
-                                ),
-                              );
-                            },);
-                          },
-                          child: Text("Checkout"),
-                        )
                       ],
                     ),
                   ],
